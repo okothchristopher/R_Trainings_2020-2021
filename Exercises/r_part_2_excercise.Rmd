@@ -1,0 +1,86 @@
+---
+title: "R PART -2"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = F)
+```
+
+```{r}
+# load packages to use 
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(lattice)
+```
+# Exercise 2.3
+## a
+a) Generate the following samples and make for each of the four samples a normal QQ plot:
+1. one sample of size 160 from the t-distribution with 3 degrees of freedom
+2.  one sample of size 110 from the N(2,4) distribution, i.e. the variance is $\sigma^2=4$
+
+3. one sample of size 180 from the exponential distribution with rate parameter 2;
+4. one sample of size 100 from the uniform distribution on the interval [1, 4].
+
+```{r fig.height=10,fig.width=12}
+x_t_distributed <- rt(n=160,df=3)
+x_norm <- rnorm(n=110,mean = 2,sd=4)
+x_exp <- rexp(180,2)
+x_unif <- runif(100,1,4)
+
+x_t_df <- data.frame(x_t_distributed,label=rep("t_distributed_data",160))
+x_norm_df <-data.frame(x_norm,label=rep("normal_distributed_data",110)) 
+x_exp_df <- data.frame(x_exp,label=rep("exp_distributed_data",180))
+x_unif_df <- data.frame(x_unif,label=rep("unif_distributed_data",100))
+
+df <-x_t_df %>% bind_rows(x_norm_df) %>% bind_rows(x_unif_df) %>% bind_rows(x_exp_df) %>% 
+  pivot_longer(cols = c(x_t_distributed,x_norm,x_unif,x_exp),names_to="distribution")
+
+df %>% ggplot(aes(sample=value))+
+  geom_qq(distribution = qnorm)+
+  geom_qq_line()+
+  facet_wrap(~label)+
+  theme_minimal()+
+  theme(strip.background.x = element_rect(fill = "black",
+                                        linetype = "blank"),
+        strip.text.x =element_text(face = "bold",
+                                    color = "white", size = 14))
+  
+  
+qqnorm(x_exp)
+
+
+```
+#b) 
+Answer for each of the data sets below the following question: “Is it reasonable to assume
+that the data come from a normal distribution?” In each case choose from the two answers:
+“Obviously not from a normal distribution” or “Normality cannot be excluded”. Base your
+answer on histograms, boxplots and normal QQ-plots.
+Also, for each dataset, point out the peculiarities of each sample by comparing the histogram, boxplot, and QQ-plot with each other. Indicate whether you detect (some/all)
+peculiarities in some/all of these diagnostic plots.
+
+
+## 1. Titanic dataset
+```{r fig.width=4,fig.height=4}
+
+titanic_data <- read_csv("C:\\Users\\Chris\\Downloads\\phpMYEkMl.csv")
+
+titanic_data$age %>% as.integer() %>% qqnorm(main="QQ PLOT FOR AGES OF PASSENGERS\n ABOARD THE TITANIC")
+titanic_data$age %>% as.integer() %>%histogram(main="HISTOGRAM OF AGE OF\n PASSENGERS")
+titanic_data$age %>% as.integer() %>% boxplot(main="BOXPLOT OF AGES OF\n PASSENGERS")
+
+```
+## Vlbw dataset 
+```{r}
+newborn <- read_csv('https://raw.githubusercontent.com/fonnesbeck/Bios8366/master/data/vlbw.csv')
+
+newborn$bwt %>% qqnorm(main='NORMAL QQ PLOT FOR\n CHILD BIRTHWEIGHTS')
+newborn$bwt %>%boxplot(main='BOX PLOT FOR\n CHILD BIRTHWEIGHTS')
+newborn$bwt %>%histogram(main='HISTOGRAM OF  \n CHILD BIRTHWEIGHTS')
+```
+
+
